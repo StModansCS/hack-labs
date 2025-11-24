@@ -23,7 +23,7 @@ elif [ $1 == "install" ] ; then
     apt-get update
 
     # add Docker"s official GPG key:
-    apt-get install ca-certificates curl
+    apt-get --assume-yes install ca-certificates curl
     install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
     chmod a+r /etc/apt/keyrings/docker.asc
@@ -35,13 +35,13 @@ elif [ $1 == "install" ] ; then
       tee /etc/apt/sources.list.d/docker.list > /dev/null
     apt-get update
 
-    apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    apt-get --assume-yes install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 elif [ $1 == "create" ] ; then
     read -p "How many hacklabs do you want to create?: " lab_count
 
     # get passwords
-    IFS=$"\r\n" GLOBIGNORE="*" command eval "passwords=($(cat ${lab_path}/passwords.txt))"
-
+    mapfile -t passwords < ${lab_path}/passwords.txt
+    
     # check there are enough passwords
     if [ ${#passwords[@]} -lt $lab_count ]; then
         echo "Not enough entries in passwords.txt. Found ${#passwords[@]}"
@@ -68,8 +68,8 @@ elif [ $1 == "create" ] ; then
 
     # add hacklab networks to edge
     for i in $(seq -f "%02g" $((lab_count - 1)) -1 0); do
-       	sed -i "/^      # hacklabs/a\ $(sed -n '/^networks:/,// { /name: /s/.*name: \(.*\)/     \1:/p }' ${lab_path}/compose-files/hacklab${i}/compose.yaml)" compose-files/edge/compose.yaml
-       	sed -i "/^  # hacklabs/a\ $(sed -n '/^networks:/,// { /name: /s/.*name: \(.*\)/ \1:\\n    external: true/p }' ${lab_path}/compose-files/hacklab${i}/compose.yaml)" compose-files/edge/compose.yaml
+        sed -i "/^      # hacklabs/a\ $(sed -n '/^networks:/,// { /name: /s/.*name: \(.*\)/     \1:/p }' ${lab_path}/compose-files/hacklab${i}/compose.yaml)" compose-files/edge/compose.yaml
+        sed -i "/^  # hacklabs/a\ $(sed -n '/^networks:/,// { /name: /s/.*name: \(.*\)/ \1:\\n    external: true/p }' ${lab_path}/compose-files/hacklab${i}/compose.yaml)" compose-files/edge/compose.yaml
     done
 
 elif [ $1 == "up" ] ; then
@@ -87,7 +87,7 @@ elif [ $1 == "up" ] ; then
 
     # start networks
     docker compose --all-resources -f "${lab_path}/compose-files/hacknet/compose.yaml" up
-    
+
     # start hacklabs
     for i in $(seq -f "%02g" 0 $((lab_count - 1))); do
         docker compose -f "${lab_path}/compose-files/hacklab${i}/compose.yaml" up -d
