@@ -41,7 +41,7 @@ elif [ $1 == "create" ] ; then
 
     # get passwords
     mapfile -t passwords < ${lab_path}/passwords.txt
-    
+
     # check there are enough passwords
     if [ ${#passwords[@]} -lt $lab_count ]; then
         echo "Not enough entries in passwords.txt. Found ${#passwords[@]}"
@@ -68,8 +68,8 @@ elif [ $1 == "create" ] ; then
 
     # add hacklab networks to edge
     for i in $(seq -f "%02g" $((lab_count - 1)) -1 0); do
-        sed -i "/^      # hacklabs/a\ $(sed -n '/^networks:/,// { /name: /s/.*name: \(.*\)/     \1:/p }' ${lab_path}/compose-files/hacklab${i}/compose.yaml)" compose-files/edge/compose.yaml
-        sed -i "/^  # hacklabs/a\ $(sed -n '/^networks:/,// { /name: /s/.*name: \(.*\)/ \1:\\n    external: true/p }' ${lab_path}/compose-files/hacklab${i}/compose.yaml)" compose-files/edge/compose.yaml
+        sed -i "/^            # hacklabs/a\ $(sed -n '/^networks:/,// { /name: /s/.*name: \(.*\)/     \1:/p }' ${lab_path}/compose-files/hacklab${i}/compose.yaml)" compose-files/edge/compose.yaml
+        sed -i "/^    # hacklabs/a\ $(sed -n '/^networks:/,// { /name: /s/.*name: \(.*\)/ \1:\\n        external: true/p }' ${lab_path}/compose-files/hacklab${i}/compose.yaml)" compose-files/edge/compose.yaml
     done
 
 elif [ $1 == "up" ] ; then
