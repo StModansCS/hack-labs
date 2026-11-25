@@ -52,12 +52,12 @@ services:
 networks:
     hacklabXXXX_net:
         name: hacklabXXXX_net
-        driver_opts:
-            com.docker.network.bridge.inhibit_ipv4: "true"
+#        driver_opts:
+#            com.docker.network.bridge.inhibit_ipv4: "true"
         internal: true
         ipam:
             config:
                 - subnet: 172.0.XXXX.0/24
-    # see ../hacknet/compose.yaml
+    # see hacknet/compose.yaml
     hacknet:
         external: true
